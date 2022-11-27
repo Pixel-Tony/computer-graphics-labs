@@ -12,7 +12,7 @@ def display(dataset_filename: str,
     '''
     def from_hex(s: str):
         cols = dict(enumerate("0123456789abcdef"))
-        s = s.removeprefix('#')
+        s = s.removeprefix('#').lower()
         match len(s):
             case 3:
                 return tuple(cols[c.lower()] * 17 for c in s[1:])
