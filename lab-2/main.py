@@ -43,4 +43,4 @@ def display(dataset_filename: str,
 
 if __name__ == '__main__':
     path = '\\'.join(__file__.split('\\')[:-1])
-    display(f'{path}\\DS9.txt', f'{path}\\result\\output.png')
+    display(f'{path}\\..\\DS9.txt', f'{path}\\result\\output.png')
