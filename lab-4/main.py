@@ -8,15 +8,21 @@ IMG_HEIGHT = 540
 
 
 class Voronoi:
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
+
     def _random_color(self) -> tuple[int, int, int]:
         return tuple(r.randint(25, 250) for _ in range(3))
 
     def _read_dots(self, dataset_path: str):
         with open(dataset_path, 'r') as file:
-            self.dots = {(*map(int, line.split()),)[::-1] for line in file.readlines()}
+            self.dots = {
+                (*map(int, line.split()),)
+                [::-1] for line in file.readlines()
+            }
 
     def _get_regions(self):
-        dots = self.dots.copy()
         def region_from(dot: tuple[int, int]):
             if dot not in dots:
                 return
@@ -47,16 +53,13 @@ class Voronoi:
                     x = x1
             return region
 
+        dots = self.dots.copy()
         regions = []
         while dots:
-            dot = dots.pop()
-            dots.add(dot)
+            dots.add(dot := dots.pop())
             regions.append(region_from(dot))
+        return [*map(lambda rg: (*map(self._int_avg, zip(*rg)),), regions)]
 
-
-        regions = [*map(lambda rg: (*map(self._int_avg, zip(*rg)),), regions)]
-
-        return regions
     def _int_avg(self, arr):
         return int(sum(arr) / len(arr))
 
@@ -67,20 +70,21 @@ class Voronoi:
             )
 
     def _draw_regions(self, regions, result_path: str):
-        image = img.new('RGBA', (960, 540), (255, 255, 255))
-        cols = {p: self._random_color() for p in regions}
-
         def dist_sqr(p1, p2):
             return abs(p1[0] - p2[0]) ** 2 + abs(p1[1] - p2[1]) ** 2
+
+        image = img.new('RGBA', (960, 540), (255, 255, 255))
+        cols = {p: self._random_color() for p in regions}
+        d = draw.ImageDraw(image)
 
         image.putdata([
             cols[min(((p, dist_sqr((x, y), p)) for p in regions),
                      key=lambda a: a[1]
                      )[0]]
-            for y in range(IMG_HEIGHT)
-            for x in range(IMG_WIDTH)
+            for y in range(self.height)
+            for x in range(self.width)
         ])
-        d = draw.ImageDraw(image)
+
         for p in regions:
             d.ellipse(((p[0] - 2, p[1] - 2), (p[0] + 2, p[1] + 2)), 0, 0, 1)
 
@@ -105,7 +109,7 @@ class Voronoi:
 
 
 if __name__ == '__main__':
-    Voronoi().draw(
+    Voronoi(IMG_WIDTH, IMG_HEIGHT).draw(
         dataset_path='../DS9.txt',
         store_path='store.txt',
         result_path='result/output.png'
